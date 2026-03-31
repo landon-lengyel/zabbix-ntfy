@@ -8,6 +8,8 @@ zabbix_export:
           value: '{ALERT.MESSAGE}'
         - name: Nseverity
           value: '{EVENT.NSEVERITY}'
+        - name: Nresolved
+          value: 2
         - name: Password
           value: '{$NTFY.PASS}'
         - name: Priority_average
@@ -61,9 +63,17 @@ zabbix_export:
           if (!params.URL) {
               throw 'Cannot get ntfy url!';
           }
-        
+
           if (!isInt(params.Nseverity) || params.Nseverity < 0 || params.Nseverity > 5){
               throw 'Nseverity value must be passed as an int from 0-5';
+          }
+
+          // If subject contains "Resolved", override "Nseverity" to "Nresolved" value.
+          if (params.Subject && typeof params.Subject === 'string' && params.Subject.toLowerCase().includes('resolved')) {
+              params.Nseverity = params.Nresolved;
+              if (!isInt(params.Nresolved) || params.Nresolved < 0 || params.Nresolved > 5){
+                  throw 'Nresolved value must be passed as an int from 0-5';
+              }
           }
         
           var response, request = new HttpRequest();
